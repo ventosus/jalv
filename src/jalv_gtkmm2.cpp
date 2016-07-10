@@ -57,11 +57,16 @@ jalv_ui_port_event(Jalv*       jalv,
 {
 }
 
+void
+jalv_discover_ui(Jalv* jalv)
+{
+	jalv->has_ui = true;
+}
+
 int
 jalv_open_ui(Jalv* jalv)
 {
 	Gtk::Window* window = new Gtk::Window();
-	jalv->has_ui = true;
 
 	if (jalv->ui) {
 		jalv_ui_instantiate(jalv, jalv_native_ui_type(jalv), NULL);

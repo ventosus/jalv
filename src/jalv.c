@@ -1348,6 +1348,9 @@ main(int argc, char** argv)
 	/* Activate plugin */
 	lilv_instance_activate(jalv.instance);
 
+	/* Discover UI */
+	jalv_discover_ui(&jalv);
+
 	/* Activate Jack */
 	jack_activate(jalv.jack_client);
 	jalv.sample_rate = jack_get_sample_rate(jalv.jack_client);

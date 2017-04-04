@@ -308,7 +308,7 @@ struct Jalv {
 	uint32_t           longest_sym;    ///< Longest port symbol
 	uint32_t           plugin_latency; ///< Latency reported by plugin (if any)
 	float              ui_update_hz;   ///< Frequency of UI updates
-	uint32_t           sample_rate;    ///< Sample rate
+	float              sample_rate;    ///< Sample rate
 	uint32_t           event_delta_t;  ///< Frames since last update sent to UI
 	uint32_t           midi_event_id;  ///< MIDI event class ID in event context
 	uint32_t           position;       ///< Transport position in frames

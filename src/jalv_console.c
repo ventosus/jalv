@@ -38,6 +38,7 @@ print_usage(const char* name, bool error)
 	fprintf(os, "  -b SIZE      Buffer size for plugin <=> UI communication\n");
 	fprintf(os, "  -c SYM=VAL   Set control value (e.g. \"vol=1.4\")\n");
 	fprintf(os, "  -d           Dump plugin <=> UI communication\n");
+	fprintf(os, "  -e URI       Load explicitely given UI\n");
 	fprintf(os, "  -h           Display this help and exit\n");
 	fprintf(os, "  -l DIR       Load state from save directory\n");
 	fprintf(os, "  -n NAME      JACK client name\n");
@@ -77,6 +78,12 @@ jalv_init(int* argc, char*** argv, JalvOptions* opts)
 			return print_usage((*argv)[0], true);
 		} else if ((*argv)[a][1] == 's') {
 			opts->show_ui = true;
+		} else if ((*argv)[a][1] == 'e') {
+			if (++a == *argc) {
+				fprintf(stderr, "Missing argument for -g\n");
+				return 1;
+			}
+			opts->ui = jalv_strdup((*argv)[a]);
 		} else if ((*argv)[a][1] == 'p') {
 			opts->print_controls = true;
 		} else if ((*argv)[a][1] == 'u') {

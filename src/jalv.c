@@ -1008,21 +1008,53 @@ main(int argc, char** argv)
 	/* Get a plugin UI */
 	const char* native_ui_type_uri = jalv_native_ui_type(&jalv);
 	jalv.uis = lilv_plugin_get_uis(jalv.plugin);
-	if (!jalv.opts.generic_ui && native_ui_type_uri) {
-		const LilvNode* native_ui_type = lilv_new_uri(jalv.world, native_ui_type_uri);
-		LILV_FOREACH(uis, u, jalv.uis) {
-			const LilvUI* this_ui = lilv_uis_get(jalv.uis, u);
-			if (lilv_ui_is_supported(this_ui,
-			                         suil_ui_supported,
-			                         native_ui_type,
-			                         &jalv.ui_type)) {
-				/* TODO: Multiple UI support */
-				jalv.ui = this_ui;
-				break;
+
+	if (!jalv.opts.generic_ui) {
+		LilvNode *opts_ui = jalv.opts.ui ? lilv_new_uri(jalv.world, jalv.opts.ui) : NULL;
+
+		if (native_ui_type_uri) {
+			const LilvNode* native_ui_type = lilv_new_uri(jalv.world, native_ui_type_uri);
+			LILV_FOREACH(uis, u, jalv.uis) {
+				const LilvUI* this_ui = lilv_uis_get(jalv.uis, u);
+				const LilvNode *this_node = lilv_ui_get_uri(this_ui);
+				if (lilv_ui_is_supported(this_ui,
+																 suil_ui_supported,
+																 native_ui_type,
+																 &jalv.ui_type)) {
+					if (!opts_ui || lilv_node_equals(opts_ui, this_node)) {
+						jalv.ui = this_ui;
+						break;
+					}
+				}
+			}
+		} else if (jalv.opts.show_ui) {
+			LilvNode* ui_showInterface = lilv_new_uri(jalv.world, LV2_UI__showInterface);
+			LilvNode* lv2_extensionData = lilv_new_uri(jalv.world, LV2_CORE__extensionData);
+			if (ui_showInterface && lv2_extensionData) {
+				LILV_FOREACH(uis, u, jalv.uis) {
+					const LilvUI* this_ui = lilv_uis_get(jalv.uis, u);
+					const LilvNode* this_node = lilv_ui_get_uri(this_ui);
+					lilv_world_load_resource(jalv.world, this_node);
+					if (lilv_world_ask(jalv.world, this_node, lv2_extensionData, ui_showInterface)) {
+						if (!opts_ui || lilv_node_equals(opts_ui, this_node)) {
+							jalv.ui = this_ui;
+							break;
+						}
+					}
+					lilv_world_unload_resource(jalv.world, this_node);
+				}
+			}
+			if(ui_showInterface) {
+				lilv_node_free(ui_showInterface);
+			}
+			if(lv2_extensionData) {
+				lilv_node_free(lv2_extensionData);
 			}
 		}
-	} else if (!jalv.opts.generic_ui && jalv.opts.show_ui) {
-		jalv.ui = lilv_uis_get(jalv.uis, lilv_uis_begin(jalv.uis));
+
+		if (opts_ui) {
+			lilv_node_free(opts_ui);
+		}
 	}
 
 	/* Create ringbuffers for UI if necessary */
